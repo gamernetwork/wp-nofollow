@@ -6,7 +6,7 @@ Forked from: https://en-gb.wordpress.org/plugins/nofollow-for-external-link/
 
 Just simple, if you use this plugin, `rel=nofollow` and `target=_blank` will be inserted automatically, for all the external links of your website posts, pages or theme menus. 
 
-Also you can set <strong>exclude domains</strong>, not to add `rel=nofollow` for the selected external domain links.
+Also you can set <strong>exclude domains</strong>, not to add `rel=nofollow` or `target=_blank` for the selected external domain links.
 
 > If you need <strong>support</strong>, <a href="http://www.cybernetikz.com/wordpress-magento-plugins/wordpress-plugins/nofollow-external-link/#disqus_thread">please leave your comment here</a>
 
