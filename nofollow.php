@@ -1,4 +1,13 @@
 <?php
+/*
+      Plugin Name: Ultimate Nofollow
+      Plugin URI: https://github.com/gamernetwork/wp-nofollow/
+      Description: A suite of tools that gives you complete control over the rel=nofollow tag on an individual link basis.
+      Version: 0.1
+      Author: Gamer Network
+      Author URI: https://github.com/gamernetwork/
+	
+*/
 
 /***********************
 * OPTIONS PAGE SECTION *
@@ -20,10 +29,8 @@ function ultnofo_options_add_page() {
 /* sanitize and validate input. 
 accepts an array, returns a sanitized array. */
 function ultnofo_options_validate( $input ) { 
-	$input[ 'nofollow_comments' ] = ( $input[ 'nofollow_comments' ] == 1 ? 1 : 0 ); // (checkbox) if 1 then 1, else 0
 	$input[ 'nofollow_default' ] = ( $input[ 'nofollow_default' ] == 1 ? 1 : 0 ); // (checkbox) if 1 then 1, else 0
 	$input[ 'new_tab_default' ] = ( $input[ 'new_tab_default' ] == 1 ? 1 : 0 ); // (checkbox) if 1 then 1, else 0
-	//	$input[ 'test_text_1' ] =  wp_filter_nohtml_kses( $input[ 'test_text_1' ] ); // (textbox) safe text, no html
 	return $input;
 }
 
@@ -38,21 +45,6 @@ function ultnofo_options_do_page() {
 			<?php $options = get_option( 'ultnofo_item' ); // populate $options array from database ?>
 			<table class="form-table">
 				
-                
-<!-- all comment links -->
-                <tr valign="top">
-					<th scope="row">Nofollow all links in comments?</th>
-					<td><input name="ultnofo_item[nofollow_comments]" type="checkbox" value="1" <?php checked( $options[ 'nofollow_comments' ] ); ?> />
-					</td>
-                </tr>
-                
-                
-<!-- all blogroll links -->
-                <tr valign="top">
-					<th scope="row">Nofollow all blogroll links?</th>
-					<td><input name="ultnofo_item[nofollow_blogroll]" type="checkbox" value="1" <?php checked( $options[ 'nofollow_blogroll' ] ); ?> />
-					<span style="color:red; font-size:smaller">(warning: will override individual selections!)</span></td>
-                </tr>
                 
                 <tr valign="top">
 					<th scope="row">Set nofollow as default when creating new links?</th>
@@ -81,14 +73,14 @@ function ultnofo_options_do_page() {
 /* define additional plugin meta links */
 function set_plugin_meta_ultnofo( $links, $file ) { 
 	$plugin = plugin_basename( __FILE__ ); // '/nofollow/nofollow.php' by default
-    if ( $file == $plugin ) { // if called for THIS plugin then:
+    	if ( $file == $plugin ) { // if called for THIS plugin then:
 		$newlinks = array( 
 			'<a href="options-general.php?page=ultimate-nofollow">Settings</a>',
 			'<a href="http://shinraholdings.com/plugins/nofollow/help">Help Page</a>' 
 		); // array of links to add
 		return array_merge( $links, $newlinks ); // merge new links into existing $links
 	}
-return $links; // return the $links (merged or otherwise)
+	return $links; // return the $links (merged or otherwise)
 }
 
 /* add hooks/filters */
@@ -108,166 +100,19 @@ function nofollow_admin_head() {
 }
 add_action( 'admin_head', 'nofollow_admin_head' );
 
-/******************************
-* NOFOLLOW SHORTCODES SECTION *
-*******************************/
-
-/* valid href starting substring? */
-function ultnofo_valid_url( $href ) {
-	$start_strs = array( // list of accepted url protocols
-		'/',
-		'http://',
-		'https://',
-		'ftp://',
-		'mailto:',
-		'magnet:',
-		'svn://',
-		'irc:',
-		'gopher://',
-		'telnet://',
-		'nntp://', 
-		'worldwind://',
-		'news:',
-		'git://',
-		'mms://'
-	);
-	
-	foreach( $start_strs as $start_str )
-		if( substr( $href, 0, strlen( $start_str ) ) == $start_str ) return TRUE;
-
-	return FALSE;
-}
-
-/* return nofollow link html or html error comment */
-function ultnofo_nofollow_link( $atts, $content = NULL ) {
-	extract( 
-		shortcode_atts( 
-			array( 
-				'href' => NULL, 
-				'title' => NULL,
-				'target' => NULL 
-			), 
-			$atts
-		)
-	);
-	
-	// href
-	if( !ultnofo_valid_url( $href ) ) return '<!-- Ultimate Nofollow Plugin | shortcode insertion failed | given href resource not valid, href must begin with: ' . print_r( $start_strs, TRUE ) . ' -->'; // if url doesn't starts with valid string
-	else $href_chunk = ' href="' . $href . '"'; // else add href=''
-	
-	// title
-	if( empty( $title ) ) $title_chunk = NULL; // if no $title, omit HTML
-	else $title_chunk = ' title="' . trim( htmlentities( strip_tags( $title ), ENT_QUOTES ) ) . '"'; // else add title='' 
-
-	// target
-	if( empty( $target ) ) $target_chunk = NULL; // if no $target, omit HTML
-	else $target_chunk = ' target="' . trim( htmlentities( strip_tags( $target ), ENT_QUOTES ) ) . '"'; // else add target='' 
-	
-	// content
-	if( empty( $content ) ) return '<!-- Ultimate Nofollow Plugin | shortcode insertion failed | no link text given -->'; // if url doesn't starts with valid string
-	else $content_chunk = trim( htmlentities( strip_tags( $content ), ENT_QUOTES ) ); // else add $content
-	
-	return '<a' . $href_chunk . $target_chunk . $title_chunk . ' rel="nofollow">' . $content_chunk . '</a>';
-}
-
-/* add hooks/filters */
-// add shortcodes
-$shortcodes = array(
-	'relnofollow',
-	'nofollow',
-	'nofol',
-	'nofo',
-	'nf'
-);
-foreach( $shortcodes as $shortcode ) add_shortcode( $shortcode, 'ultnofo_nofollow_link' );
-
-/****************************
-* BLOGROLL NOFOLLOW SECTION *
-*****************************/
-
-function ultnofo_blogroll_add_meta_box() {
-	add_meta_box( 'ultnofo_blogroll_nofollow_div', 'Ultimate Nofollow', 'ultnofo_blogroll_inner_meta_box', 'link', 'side','high' );	
-}
-
-function ultnofo_blogroll_inner_meta_box ( $post ) {
-	$bookmark = get_bookmark( $post->ID, 'ARRAY_A' );
-	if( strpos( $bookmark['link_rel'], 'nofollow' ) !== FALSE ) $checked = ' checked="checked"';
-	else $checked = '';
-
-	$options = get_option( 'ultnofo_item' );
-	if( $options['nofollow_blogroll'] ) { 
-		$disabled=' disabled="disabled"';
-		$message='<br /><span style="color:red; font-size:smaller;">ALL blogroll links nofollowed on the <a href="options-general.php?page=ultimate-nofollow" target="_blank">options</a> page.</span>';
-	}
-	else { 
-		$disabled = '';	
-		$message = '';
-	}
-
-	?>
-<label for="ultnofo_blogroll_nofollow_checkbox">Nofollow this link?</label>
-<input value="1" id="ultnofo_blogroll_nofollow_checkbox" name="ultnofo_blogroll_nofollow_checkbox"<?php echo $disabled; ?> type="checkbox"<?php echo $checked; ?> /> <?php echo $message; ?>
-<?php
-}
-
-function ultnofo_blogroll_save_meta_box( $link_rel ) {
-	$rel = trim( str_replace( 'nofollow', '', $link_rel ) );
-	if( $_POST['ultnofo_blogroll_nofollow_checkbox'] ) $rel .= ' nofollow';
-	return trim( $rel );
-}
-
-function ultnofo_blogroll_nofollow_all( $links ) {
-	foreach( $links as $link ) {
-		$rel = trim( str_replace('nofollow', '', $link->link_rel ) );
-		$link->link_rel = trim( $rel . ' nofollow' );
-	}
-	return $links;
-}
-
-/* add hooks/filters */
-add_action( 'add_meta_boxes', 'ultnofo_blogroll_add_meta_box', 1 );
-add_filter( 'pre_link_rel', 'ultnofo_blogroll_save_meta_box', 99998, 1);
-
-$ultnofo_options = get_option( 'ultnofo_item' ); // NOT IN FUNCTION
-if( $ultnofo_options['nofollow_blogroll'] ) add_filter( 'get_bookmarks', 'ultnofo_blogroll_nofollow_all', 99999);
-
-
-
-
-/**********************************************
-* ADD LINK DIALOGUE NOFOLLOW CHECKBOX SECTION *
-***********************************************/
 function nofollow_redo_wplink() {
-	wp_deregister_script( 'wplink' );
-	
-	wp_register_script( 'wplink', plugins_url( 'wplink.js', __FILE__), array( 'jquery', 'wpdialogs' ), false, 1 );
-	
-	wp_localize_script( 'wplink', 'wpLinkL10n', array(
-		'title' => __('Insert/edit link'),
-		'update' => __('Update'),
-		'save' => __('Add Link'),
-		'noTitle' => __('(no title)'),
-		'noMatchesFound' => __('No matches found.')
-	) );
+        wp_deregister_script( 'wplink' );
+       
+        wp_register_script( 'wplink', plugins_url( 'wplink.js', __FILE__), array( 'jquery', 'wpdialogs' ), false, 1 );
+       
+        wp_localize_script( 'wplink', 'wpLinkL10n', array(
+                'title' => __('Insert/edit link'),
+                'update' => __('Update'),
+                'save' => __('Add Link'),
+                'noTitle' => __('(no title)'),
+                'noMatchesFound' => __('No matches found.')
+        ) );
 }
 add_action( 'admin_enqueue_scripts', 'nofollow_redo_wplink', 999 );
 
-
-/************************************
-* NOFOLLOW ON COMMENT LINKS SECTION *
-*************************************/
-
-// add/remove nofollow from all comment links
-function ultnofo_comment_links( $comment ) {
-	$options = get_option( 'ultnofo_item' );
-	if( !$options[ 'nofollow_comments' ] )
-		$comment = str_replace( 'rel="nofollow"', '', $comment );
-	elseif( !strpos( $comment, 'rel="nofollow"' ) )
-		$comment = str_replace( '<a ', '<a rel="nofollow"', $comment ); 
-	return $comment;	
-}
-
-/* add hooks/filters */
-// add/remove nofollow from comment links
-add_filter('comment_text', 'ultnofo_comment_links', 10);
 ?>

@@ -1,16 +1,12 @@
 # wp-nofollow
 
-Extended nofollow wordpress plugin (forked from https://en-gb.wordpress.org/plugins/nofollow/).
+Nofollow wordpress plugin (originally forked from https://en-gb.wordpress.org/plugins/nofollow/).
 
 ## Features
 
 * The addition of a **nofollow checkbox when inserting links in posts**
   * This can be defaulted to true using a plugin setting.
 * The option to set 'Open link in a new tab' as true by default when inserting links in posts.
-* Several **nofollow shortcodes**
-* A nofollow option for **individual blogroll links**
-* Or a **nofollow for all blogroll links** option
-* Add or remove the nofollow tag from **all links in comments**
 
 ## Installation
 
