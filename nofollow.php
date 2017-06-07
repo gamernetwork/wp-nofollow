@@ -97,6 +97,7 @@ function nofollow_admin_head() {
 	$options = get_option( 'ultnofo_item' );
 	echo '<script>NOFOLLOW_DEFAULT = "'. $options['nofollow_default'] . '";</script>';
 	echo '<script>NEW_TAB_DEFAULT = "'. $options['new_tab_default'] . '";</script>';
+	echo '<script src="/wp-content/plugins/wp-nofollow/wplink_target.js"></script>';
 }
 add_action( 'admin_head', 'nofollow_admin_head' );
 

@@ -28,9 +28,6 @@ var wpLink;
 			}
 			var html = '<br /><label><span> </span><input type="checkbox" id="link-nofollow-checkbox"' + checked + ' /> Add <code>rel="nofollow"</code> to link</label>';
 			$('#wp-link .link-target').append( html );
-			if (NEW_TAB_DEFAULT == '1') {
-				$("#wp-link-target").prop("checked", true);
-			}
 		},
 
 		init: function() {
